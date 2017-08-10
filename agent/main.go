@@ -1,9 +1,18 @@
 package main
 
-import "time"
+import (
+	"flag"
+	"time"
+)
+
+var (
+	transAddr = flag.String("trans", "127.0.0.1:7070", "transfer address")
+)
 
 func main() {
-	sender := NewSender("127.0.0.1:8080")
+	flag.Parse()
+
+	sender := NewSender(*transAddr)
 	go sender.Start()
 	sched := NewScheduler(sender.Channel())
 	sched.AddMetric(MetricGroupFunc(CpuMetrics), time.Second*3)
