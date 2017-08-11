@@ -13,7 +13,7 @@ import (
 
 var (
 	kafkaAddr = flag.String("kafka", "127.0.0.1:9092", "kafka address list")
-	esAddr    = flag.String("es", "127.0.0.1:9200", "es address list")
+	esAddr    = flag.String("es", "http://127.0.0.1:9200", "es address list")
 	topic     = flag.String("topic", "falcon", "kafka topic")
 )
 
@@ -21,7 +21,9 @@ func main() {
 	flag.Parse()
 	kafkaList := strings.Split(*kafkaAddr, ",")
 	esList := strings.Split(*esAddr, ",")
-	consumer, err := cluster.NewConsumer(kafkaList, "falcon", []string{*topic}, nil)
+	config := cluster.NewConfig()
+	config.Consumer.Return.Errors = true
+	consumer, err := cluster.NewConsumer(kafkaList, "falcon-group", []string{*topic}, config)
 	if err != nil {
 		log.Fatal(err)
 	}

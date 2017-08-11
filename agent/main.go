@@ -16,6 +16,7 @@ func main() {
 	go sender.Start()
 	sched := NewScheduler(sender.Channel())
 	sched.AddMetric(MetricGroupFunc(CpuMetrics), time.Second*3)
-	sched.AddMetric(NewUserMetric("/Users/fanbingxin/metric.sh"), time.Second*3)
+	sched.AddMetric(MetricGroupFunc(MemMetrics), time.Second*3)
+	//sched.AddMetric(NewUserMetric("/Users/fanbingxin/metric.sh"), time.Second*3)
 	select {}
 }

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 )
 
 func CpuMetrics() []*MetricEntry {
@@ -18,5 +19,12 @@ func CpuMetrics() []*MetricEntry {
 }
 
 func MemMetrics() []*MetricEntry {
-	return nil
+	var ret []*MetricEntry
+	stat, err := mem.VirtualMemory()
+	if err != nil {
+		panic(err)
+	}
+
+	ret = append(ret, NewMetricEntry("mem.used", stat.UsedPercent))
+	return ret
 }
