@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/icexin/mini-falcon/common"
 )
 
 type UserMetric struct {
@@ -19,8 +21,8 @@ func NewUserMetric(script string) *UserMetric {
 	}
 }
 
-func (u *UserMetric) Metrics() []*MetricEntry {
-	var ret []*MetricEntry
+func (u *UserMetric) Metrics() []*common.Metric {
+	var ret []*common.Metric
 	cmd := exec.Command("bash", "-c", u.script)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
@@ -43,7 +45,7 @@ func (u *UserMetric) Metrics() []*MetricEntry {
 		}
 		name := fields[0]
 		value, _ := strconv.ParseFloat(fields[1], 64)
-		metric := NewMetricEntry(name, value)
+		metric := NewMetric(name, value)
 		ret = append(ret, metric)
 	}
 

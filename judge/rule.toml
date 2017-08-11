@@ -1,0 +1,11 @@
+[[rules]]
+expr = "cpu.percent > 10"
+matchMax = 4
+alarmMax = 3
+mails = ["a@qq.com"]
+
+[[rules]]
+expr = "mem.percent > 20"
+matchMax = 4
+alarmMax = 3
+mails = ["a@qq.com"]

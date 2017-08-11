@@ -23,7 +23,7 @@ func main() {
 	esList := strings.Split(*esAddr, ",")
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
-	consumer, err := cluster.NewConsumer(kafkaList, "falcon-group", []string{*topic}, config)
+	consumer, err := cluster.NewConsumer(kafkaList, "falcon-saver", []string{*topic}, config)
 	if err != nil {
 		log.Fatal(err)
 	}

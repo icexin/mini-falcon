@@ -6,10 +6,12 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/icexin/mini-falcon/common"
 )
 
 type Sender struct {
-	ch chan *MetricEntry
+	ch chan *common.Metric
 
 	addr string
 	w    *bufio.Writer
@@ -18,7 +20,7 @@ type Sender struct {
 
 func NewSender(addr string) *Sender {
 	return &Sender{
-		ch:   make(chan *MetricEntry, 1000),
+		ch:   make(chan *common.Metric, 1000),
 		addr: addr,
 	}
 }
@@ -55,7 +57,7 @@ func (s *Sender) flush() {
 	}
 }
 
-func (s *Sender) send(m *MetricEntry) error {
+func (s *Sender) send(m *common.Metric) error {
 	if s.conn == nil {
 		err := s.connect()
 		if err != nil {
@@ -95,7 +97,7 @@ func (s *Sender) loopsend() {
 	}
 }
 
-func (s *Sender) Channel() chan *MetricEntry {
+func (s *Sender) Channel() chan *common.Metric {
 	return s.ch
 }
 

@@ -3,40 +3,36 @@ package main
 import (
 	"os"
 	"time"
+
+	"github.com/icexin/mini-falcon/common"
 )
 
 type MetricGroup interface {
-	Metrics() []*MetricEntry
+	Metrics() []*common.Metric
 }
 
-type MetricGroupFunc func() []*MetricEntry
+type MetricGroupFunc func() []*common.Metric
 
-func (m MetricGroupFunc) Metrics() []*MetricEntry {
+func (m MetricGroupFunc) Metrics() []*common.Metric {
 	return m()
 }
 
-type MetricEntry struct {
-	Metric    string  `json:"metric"`
-	Endpoint  string  `json:"endpoint"`
-	Value     float64 `json:"value"`
-	Timestamp int64   `json:"timestamp"`
-}
-
-func NewMetricEntry(name string, value float64) *MetricEntry {
+func NewMetric(name string, value float64) *common.Metric {
 	host, _ := os.Hostname()
-	return &MetricEntry{
+	return &common.Metric{
 		Metric:    name,
 		Endpoint:  host,
 		Value:     value,
+		Tag:       tags,
 		Timestamp: time.Now().Unix(),
 	}
 }
 
 type Scheduler struct {
-	output chan *MetricEntry
+	output chan *common.Metric
 }
 
-func NewScheduler(output chan *MetricEntry) *Scheduler {
+func NewScheduler(output chan *common.Metric) *Scheduler {
 	return &Scheduler{
 		output: output,
 	}

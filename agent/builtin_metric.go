@@ -3,28 +3,29 @@ package main
 import (
 	"time"
 
+	"github.com/icexin/mini-falcon/common"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 )
 
-func CpuMetrics() []*MetricEntry {
-	var ret []*MetricEntry
+func CpuMetrics() []*common.Metric {
+	var ret []*common.Metric
 	percents, err := cpu.Percent(time.Second, false)
 	if err != nil {
 		panic(err)
 	}
 
-	ret = append(ret, NewMetricEntry("cpu.percent", percents[0]))
+	ret = append(ret, NewMetric("cpu.percent", percents[0]))
 	return ret
 }
 
-func MemMetrics() []*MetricEntry {
-	var ret []*MetricEntry
+func MemMetrics() []*common.Metric {
+	var ret []*common.Metric
 	stat, err := mem.VirtualMemory()
 	if err != nil {
 		panic(err)
 	}
 
-	ret = append(ret, NewMetricEntry("mem.used", stat.UsedPercent))
+	ret = append(ret, NewMetric("mem.percent", stat.UsedPercent))
 	return ret
 }
