@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"strings"
+	"time"
 
 	elastic "gopkg.in/olivere/elastic.v5"
 
@@ -16,6 +17,11 @@ var (
 	esAddr    = flag.String("es", "http://127.0.0.1:9200", "es address list")
 	topic     = flag.String("topic", "falcon", "kafka topic")
 )
+
+func indexName() string {
+	date := time.Now().Format("20060102")
+	return "falcon-" + date
+}
 
 func main() {
 	flag.Parse()
@@ -37,7 +43,7 @@ func main() {
 		select {
 		case msg := <-consumer.Messages():
 			_, err := client.Index().
-				Index("falcon").
+				Index(indexName()).
 				Type("falcon").
 				BodyString(string(msg.Value)).
 				Do(context.TODO())

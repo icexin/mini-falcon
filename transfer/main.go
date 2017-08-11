@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	listenAddr = flag.String("listen", ":7070", "listen address")
+	listenAddr = flag.String("listen", ":6000", "listen address")
 	topic      = flag.String("topic", "falcon", "kafka topic")
 	kafkaAddrs = flag.String("kafka", "127.0.0.1:9092", "kafka address list")
 )

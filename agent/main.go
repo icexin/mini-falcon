@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	transAddr = flag.String("trans", "127.0.0.1:7070", "transfer address")
+	transAddr = flag.String("trans", "127.0.0.1:6000", "transfer address")
 	tagflag   = flag.String("tags", "", "tags")
 
 	tags []string
