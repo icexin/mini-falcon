@@ -1,13 +1,13 @@
 [[rules]]
 expr = "cpu.percent > 10"
-tags = ["agent1"]
-matchMax = 4
-alarmMax = 3
-mails = ["a@qq.com"]
+tags = []
+matchMax = 3
+alarmMax = 1
+mails = []
 
 [[rules]]
 expr = "mem.percent > 20"
-tags = ["agent2"]
-matchMax = 4
-alarmMax = 3
-mails = ["a@qq.com"]
+tags = []
+matchMax = 3
+alarmMax = 1
+mails = []

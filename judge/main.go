@@ -9,14 +9,16 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
 	"github.com/icexin/mini-falcon/common"
 )
 
 var (
-	kafkaAddr = flag.String("kafka", "127.0.0.1:9092", "kafka address list")
-	topic     = flag.String("topic", "falcon", "kafka topic")
-	ruleFile  = flag.String("f", "rule.toml", "rule file")
+	kafkaAddr  = flag.String("kafka", "127.0.0.1:9092", "kafka address list")
+	topic      = flag.String("topic", "falcon", "kafka topic")
+	alarmTopic = flag.String("alarm-topic", "falcon-alarm", "kafka alarm topic")
+	ruleFile   = flag.String("f", "rule.toml", "rule file")
 )
 
 type Rule struct {
@@ -30,8 +32,8 @@ type Rule struct {
 	op     string
 	value  float64
 
-	matchCouter int
-	alarmCouter int
+	matchCouter map[string]int
+	alarmCouter map[string]int
 }
 
 func (r *Rule) MatchExpr(metric *common.Metric) bool {
@@ -93,6 +95,8 @@ func loadRules() (map[string][]*Rule, error) {
 		if err != nil {
 			return nil, err
 		}
+		r.alarmCouter = make(map[string]int)
+		r.matchCouter = make(map[string]int)
 		m[r.metric] = append(m[r.metric], r)
 	}
 	return m, nil
@@ -104,6 +108,22 @@ func alarm(r *Rule, metric *common.Metric, recovery bool) {
 	} else {
 		log.Printf("[alarm] %s %v", r.Expr, metric)
 	}
+
+	alarm := &common.Alarm{
+		Mail:     r.Mails,
+		Expr:     r.Expr,
+		Value:    metric.Value,
+		Endpoint: metric.Endpoint,
+		Tag:      metric.Tag,
+		Recovery: recovery,
+	}
+	body, _ := json.Marshal(alarm)
+	msg := &sarama.ProducerMessage{
+		Topic: *alarmTopic,
+		Key:   nil,
+		Value: sarama.ByteEncoder(body),
+	}
+	producer.Input() <- msg
 }
 
 func judge(metric *common.Metric) {
@@ -117,23 +137,25 @@ func judge(metric *common.Metric) {
 			continue
 		}
 		if !r.MatchExpr(metric) {
-			if r.matchCouter >= r.MatchMax {
+			if r.matchCouter[metric.Endpoint] >= r.MatchMax {
 				alarm(r, metric, true)
 			}
-			r.matchCouter = 0
-			r.alarmCouter = 0
+			r.matchCouter[metric.Endpoint] = 0
+			r.alarmCouter[metric.Endpoint] = 0
 			continue
 		}
-		r.matchCouter++
-		if r.matchCouter >= r.MatchMax && r.alarmCouter < r.AlarmMax {
-			r.alarmCouter++
+		r.matchCouter[metric.Endpoint]++
+		if r.matchCouter[metric.Endpoint] >= r.MatchMax &&
+			r.alarmCouter[metric.Endpoint] < r.AlarmMax {
+			r.alarmCouter[metric.Endpoint]++
 			alarm(r, metric, false)
 		}
 	}
 }
 
 var (
-	rulemap = make(map[string][]*Rule)
+	rulemap  = make(map[string][]*Rule)
+	producer sarama.AsyncProducer
 )
 
 func main() {
@@ -152,6 +174,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	producer, err = sarama.NewAsyncProducer(kafkaList, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		for err := range producer.Errors() {
+			log.Print(err)
+		}
+	}()
 
 	for {
 		select {
